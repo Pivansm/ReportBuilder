@@ -1,6 +1,5 @@
 package skeleton;
 
-
 import javax.swing.*;
 
 class TreeViewTable extends JFrame {
