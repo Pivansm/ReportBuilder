@@ -33,8 +33,13 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        createNewTable();
+    public static void main(String[] args) throws SQLException, ClassNotFoundException {
+
+        //createNewTable();
+        SQLiteJDBC sqLiteJDBC = new SQLiteJDBC();
+        sqLiteJDBC.createTbl();
+
+
     }
 
 }

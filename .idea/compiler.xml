@@ -9,6 +9,6 @@
         <module name="ReportBuilder" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="8" />
+    <bytecodeTargetLevel target="13" />
   </component>
 </project>
