@@ -5,8 +5,8 @@ import java.sql.*;
 
 public class SQLiteJDBC {
 
-    Connection conn;
-    Statement statement;
+    private Connection conn;
+    public Statement statement;
 
     public SQLiteJDBC() throws SQLException, ClassNotFoundException {
             Class.forName("org.sqlite.JDBC");
@@ -16,19 +16,20 @@ public class SQLiteJDBC {
 
     public void createTbl() throws SQLException {
         String strSql;
-        strSql = "CREATE TABLE IF NOT EXISTS UNOTHOPR (IDREP INTEGER PRIMARY KEY AUTOINCREMENT, ";
-        strSql += "NAMEREP varchar(250) NOT NULL, ";
-        strSql += "SKIP text not null, IDRESB integer)";
+        strSql = "CREATE TABLE IF NOT EXISTS QUREPORT (IDREP INTEGER PRIMARY KEY AUTOINCREMENT, ";
+        strSql += "NAMEREP varchar(250) NOT NULL) ";
         statement.executeUpdate(strSql);
 
-        strSql = "CREATE UNIQUE INDEX IF NOT EXISTS UI_REP_ID ON UNOTHOPR(IDREP, NAMEREP) ";
+        strSql = "CREATE UNIQUE INDEX IF NOT EXISTS UI_REP_ID ON QUREPORT(IDREP, NAMEREP) ";
         statement.executeUpdate(strSql);
 
-        strSql = "CREATE TABLE IF NOT EXISTS TREUNOTH (IDTREREP INTEGER PRIMARY KEY AUTOINCREMENT, ";
-        strSql += "IDPARENUO integer not null, TITLESB varchar(250) NOT NULL,";
-        strSql += "PRZSRT integer)";
+        strSql = "CREATE TABLE IF NOT EXISTS SUBREPORT(IDSBREP INTEGER PRIMARY KEY AUTOINCREMENT, ";
+        strSql += "IDPARENTREP integer not null, TITLES varchar(250) NOT NULL,";
+        strSql += "SKIP text)";
         statement.executeUpdate(strSql);
     }
 
-
+    public Connection getConn() {
+        return conn;
+    }
 }

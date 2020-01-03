@@ -37,8 +37,14 @@ public class Main {
 
         //createNewTable();
         SQLiteJDBC sqLiteJDBC = new SQLiteJDBC();
-        sqLiteJDBC.createTbl();
+        //sqLiteJDBC.createTbl();
 
+        ReportDAO reportDAO = new ReportDAO(sqLiteJDBC.getConn());
+        reportDAO.findAll();
+
+
+        Report report = new Report(1, "Узел2");
+        reportDAO.insert(report);
 
     }
 
