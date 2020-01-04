@@ -7,28 +7,32 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SubReportDAO extends AbstractDAO<Report> {
+public class SubReportDAO extends AbstractDAO<SubReport> {
 
     public static final String SQL_FIND_ALL = "SELECT * FROM SUBREPORT";
+    public static final String SQL_FIND_PARENT = "SELECT * FROM SUBREPORT WHERE IDPARENTREP = ?";
     public static final String SQL_INSERT = "INSERT INTO SUBREPORT (IDPARENTREP, TITLES) VALUES (?, ?)";
 
     public SubReportDAO(Connection connection) {
         super(connection);
     }
 
-    @Override
-    public List<Report> findAll() {
-        List<Report> result = new ArrayList<Report>();
+
+    public List<SubReport> findParentId(int id) {
+        List<SubReport> result = new ArrayList<>();
         try {
 
-            PreparedStatement statement = connection.prepareStatement(SQL_FIND_ALL);
+            PreparedStatement statement = connection.prepareStatement(SQL_FIND_PARENT);
+            statement.setInt(1, id);
             ResultSet rs = statement.executeQuery();
 
             while (rs.next()) {
-                Report report = new Report();
-                report.setId(rs.getInt("IDTREREP"));
-                report.setNameReport(rs.getString("TITLES"));
-                result.add(report);
+                SubReport subReport = new SubReport();
+                subReport.setId(rs.getInt("IDSBREP"));
+                subReport.setParentId(rs.getInt("IDPARENTREP"));
+                subReport.setNameReport(rs.getString("TITLES"));
+                subReport.setQuery(rs.getString("SKIP"));
+                result.add(subReport);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -38,7 +42,30 @@ public class SubReportDAO extends AbstractDAO<Report> {
     }
 
     @Override
-    public Report findEntityById(int id) {
+    public List<SubReport> findAll() {
+        List<SubReport> result = new ArrayList<>();
+        try {
+
+            PreparedStatement statement = connection.prepareStatement(SQL_FIND_ALL);
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                SubReport subReport = new SubReport();
+                subReport.setId(rs.getInt("IDSBREP"));
+                subReport.setParentId(rs.getInt("IDPARENTREP"));
+                subReport.setNameReport(rs.getString("TITLES"));
+                subReport.setQuery(rs.getString("SKIP"));
+                result.add(subReport);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+
+    }
+
+    @Override
+    public SubReport findEntityById(int id) {
         return null;
     }
 
@@ -48,17 +75,17 @@ public class SubReportDAO extends AbstractDAO<Report> {
     }
 
     @Override
-    public boolean delete(Report entity) {
+    public boolean delete(SubReport entity) {
         return false;
     }
 
     @Override
-    public boolean create(Report entity) {
+    public boolean create(SubReport entity) {
         return false;
     }
 
     @Override
-    public boolean insert(Report entity) {
+    public boolean insert(SubReport entity) {
 
         boolean flag = false;
         try {
@@ -78,7 +105,7 @@ public class SubReportDAO extends AbstractDAO<Report> {
     }
 
     @Override
-    public Report update(Report entity) {
+    public SubReport update(SubReport entity) {
         return null;
     }
 }

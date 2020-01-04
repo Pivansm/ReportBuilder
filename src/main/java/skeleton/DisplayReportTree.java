@@ -18,9 +18,13 @@ public class DisplayReportTree extends JFrame {
 
     private JTree cat_tree;
     SQLiteJDBC sqLiteJDBC;
+    ReportDAO reportDAO;
+    SubReportDAO subReportDAO;
 
     public DisplayReportTree() throws SQLException, ClassNotFoundException {
         sqLiteJDBC = new SQLiteJDBC();
+        reportDAO = new ReportDAO(sqLiteJDBC.getConn());
+        subReportDAO = new SubReportDAO(sqLiteJDBC.getConn());
         initComponents();
         pop_tree();
     }
@@ -39,89 +43,45 @@ public class DisplayReportTree extends JFrame {
         container.add(new JScrollPane(cat_tree), BorderLayout.CENTER);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(400, 300);
+        setSize(480, 320);
         setVisible(true);
 
 
     }// </editor-fold>
 
-
-    //@SuppressWarnings("CallToThreadDumpStack")
     public final void pop_tree() {
         try {
 
-            try {
-                conn = sqLiteJDBC.getConn();
-                stm = conn.createStatement();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            ArrayList list = new ArrayList();
-            list.add("Category List");
-            String sql = "SELECT * FROM QUREPORT";
+            List<Report> list =  reportDAO.findAll();
 
-            ResultSet rs = stm.executeQuery(sql);
-
-            while (rs.next()) {
-                Object value[] = {rs.getString(1), rs.getString(2)};
-                list.add(value);
-            }
             Object hierarchy[] = list.toArray();
             DefaultMutableTreeNode root = processHierarchy(hierarchy);
-
             DefaultTreeModel treeModel = new DefaultTreeModel(root);
             cat_tree.setModel(treeModel);
+
         } catch (Exception e) {
         }
 
     }
 
-    //@SuppressWarnings("CallToThreadDumpStack")
     public DefaultMutableTreeNode processHierarchy(Object[] hierarchy) {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode(hierarchy[0]);
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode("Заппросы");
         try {
-            int ctrow = 0;
-            int i = 0;
-            try {
+            DefaultMutableTreeNode child, grandchild;
+            List<Report> list = reportDAO.findAll();
+            for (Report rp : list) {
+                child = new DefaultMutableTreeNode(rp.getNameReport());
+                node.add(child);
 
-                try {
-                    conn = sqLiteJDBC.getConn();
-                    stm = conn.createStatement();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                List<SubReport> subList = subReportDAO.findParentId(rp.getId());
+                for (SubReport srp : subList) {
+                    grandchild = new DefaultMutableTreeNode(srp.getNameReport());
+                    child.add(grandchild);
                 }
-                String sql = "SELECT * from QUREPORT";
-                ResultSet rs = stm.executeQuery(sql);
-
-                while (rs.next()) {
-                    ctrow = rs.getRow();
-                }
-                String L1Nam[] = new String[ctrow];
-                String L1Id[] = new String[ctrow];
-                ResultSet rs1 = stm.executeQuery(sql);
-                while (rs1.next()) {
-                    L1Nam[i] = rs1.getString("NAMEREP");
-                    L1Id[i] = rs1.getString("IDREP");
-                    i++;
-                }
-                DefaultMutableTreeNode child, grandchild;
-                for (int childIndex = 0; childIndex < L1Nam.length; childIndex++) {
-                    child = new DefaultMutableTreeNode(L1Nam[childIndex]);
-                    node.add(child);//add each created child to root
-                    String sql2 = "SELECT TITLES FROM SUBREPORT WHERE IDPARENTREP = '" + L1Id[childIndex] + "' ";
-                    ResultSet rs3 = stm.executeQuery(sql2);
-                    while (rs3.next()) {
-                        grandchild = new DefaultMutableTreeNode(rs3.getString("TITLES"));
-                        child.add(grandchild);//add each grandchild to each child
-                    }
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
 
-        } catch (Exception e) {
-            //
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return (node);
