@@ -1,9 +1,17 @@
 package skeleton;
 
+import swing.PopupSample;
+
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +25,7 @@ public class DisplayReportTree extends JFrame {
     Statement stm = null;
 
     private JTree cat_tree;
+    private JPopupMenu popupMenu;
     SQLiteJDBC sqLiteJDBC;
     ReportDAO reportDAO;
     SubReportDAO subReportDAO;
@@ -38,6 +47,18 @@ public class DisplayReportTree extends JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Product List");
+
+        popupMenu = createPopupMenu();
+
+        cat_tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //super.mouseClicked(e);
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
 
         Container container = getContentPane();
         container.add(new JScrollPane(cat_tree), BorderLayout.CENTER);
@@ -86,6 +107,34 @@ public class DisplayReportTree extends JFrame {
 
         return (node);
     }
+
+    private JPopupMenu createPopupMenu() {
+        JPopupMenu pm = new JPopupMenu();
+        JMenuItem enter = new JMenuItem("Выполнить");
+        enter.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(DisplayReportTree.this, "You chose the letter: ");
+            }
+        });
+        pm.add(enter);
+        pm.addSeparator();
+        JMenuItem nwusel = new JMenuItem("Новый узел");
+        nwusel.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String newuzl = JOptionPane.showInputDialog(DisplayReportTree.this,"<html><h2>Новый узел");
+                newUsel(newuzl);
+            }
+        });
+        pm.add(nwusel);
+        return pm;
+    }
+
+   private void newUsel(String nameUsel) {
+       Report report = new Report(1, nameUsel);
+       reportDAO.insert(report);
+   }
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         new DisplayReportTree();
