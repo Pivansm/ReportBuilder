@@ -11,7 +11,8 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
 
     public static final String SQL_FIND_ALL = "SELECT * FROM SUBREPORT";
     public static final String SQL_FIND_PARENT = "SELECT * FROM SUBREPORT WHERE IDPARENTREP = ?";
-    public static final String SQL_INSERT = "INSERT INTO SUBREPORT (IDPARENTREP, TITLES) VALUES (?, ?)";
+    public static final String SQL_INSERT = "INSERT INTO SUBREPORT (IDPARENTREP, TITLES, SKIP) VALUES (?, ?, ?)";
+    public static final String SQL_UPDATE = "UPDATE SUBREPORT SET SKIP = ? WHERE IDSBREP = ?";
 
     public SubReportDAO(Connection connection) {
         super(connection);
@@ -91,8 +92,9 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
         try {
 
             PreparedStatement statement = connection.prepareStatement(SQL_INSERT);
-            statement.setInt(1, entity.getId());
+            statement.setInt(1, entity.getParentId());
             statement.setString(2, entity.getNameReport());
+            statement.setString(3, entity.getQuery());
             statement.execute();
             flag = true;
 
@@ -105,7 +107,19 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
     }
 
     @Override
-    public SubReport update(SubReport entity) {
+    public SubReport update(SubReport entity)
+    {
+        try {
+
+            PreparedStatement statement = connection.prepareStatement(SQL_UPDATE);
+            statement.setString(1, entity.getQuery());
+            statement.setInt(2, entity.getId());
+            statement.execute();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 }

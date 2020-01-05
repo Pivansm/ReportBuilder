@@ -32,4 +32,9 @@ public class SubReport extends Entity {
     public void setParentId(int parentId) {
         this.parentId = parentId;
     }
+
+    @Override
+    public String toString() {
+        return "" + nameReport;
+    }
 }

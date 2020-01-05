@@ -22,6 +22,6 @@ public class Report extends Entity {
 
     @Override
     public String toString() {
-        return "Report: " + nameReport;
+        return "" + nameReport;
     }
 }
