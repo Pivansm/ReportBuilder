@@ -10,10 +10,7 @@ import javax.swing.text.Style;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.sql.*;
 import java.util.List;
 import java.util.Vector;
@@ -25,6 +22,7 @@ public class DisplayReportTree extends JFrame {
     Connection conn = null;
     Statement stm = null;
 
+    private JMenuBar menuBar;
     private JToolBar toolbar;
     private JTree cat_tree;
     private JTable per_table;
@@ -58,11 +56,37 @@ public class DisplayReportTree extends JFrame {
     //@SuppressWarnings("unchecked")
     private void initComponents() {
 
+        //Меню
+        ActionListener menuListener = new MenuActionListener();
+        menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        menuBar.add(fileMenu);
+        JMenuItem newMenuItem = new JMenuItem("Настройка", KeyEvent.VK_N);
+        newMenuItem.addActionListener(menuListener);
+        fileMenu.add(newMenuItem);
+        // Separator
+        fileMenu.addSeparator();
+        // File->Exit, X - Mnemonic
+        JMenuItem exitMenuItem = new JMenuItem("Exit", KeyEvent.VK_X);
+        exitMenuItem.addActionListener(menuListener);
+        fileMenu.add(exitMenuItem);
+
+
         cat_tree = new JTree();
         per_table = new JTable();
+        toolbar = new JToolBar();
+
+        JButton enterButton = new JButton("Выполнить");
+        toolbar.add(enterButton);
+        toolbar.addSeparator();
+        String[] export = new String[] {"Excel(xlsx)", "Excel(xml)", "File(csv)"};
+        toolbar.add(new JComboBox<String> (export));
+        // Блокируем возможность перетаскивания панели
+        toolbar.setFloatable(false);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Product List");
+        setTitle("Report Builder");
 
         popupMenu = createPopupMenu();
 
@@ -91,8 +115,10 @@ public class DisplayReportTree extends JFrame {
                 new JScrollPane(per_table)
         );
         container.add(splitPane);
+        container.add(toolbar, BorderLayout.NORTH);
         //container.add(new JScrollPane(cat_tree), BorderLayout.CENTER);
 
+        setJMenuBar(menuBar);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(640, 480);
         setVisible(true);
@@ -292,6 +318,15 @@ public class DisplayReportTree extends JFrame {
         }
 
         return new DefaultTableModel(data, columnNames);
+    }
+
+    static class MenuActionListener implements ActionListener {
+        public void actionPerformed (ActionEvent actionEvent) {
+            System.out.println ("Selected: " + actionEvent.getActionCommand());
+            if(actionEvent.getActionCommand() == "Exit") {
+                System.exit(0);
+            }
+        }
     }
 
 
