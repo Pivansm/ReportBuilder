@@ -3,6 +3,7 @@ package skeleton;
 import swing.PopupSample;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -26,12 +27,11 @@ public class DisplayReportTree extends JFrame {
     private JToolBar toolbar;
     private JTree cat_tree;
     private JTable per_table;
-    private JTextPane textEditor;
-    private Style normal;
+    private JPanel jp_status;
     private DefaultMutableTreeNode root;
     private DefaultTreeModel treeModel;
     private JPopupMenu popupMenu;
-
+    private JLabel lb_status;
     private int idParent;
     private int idCurrChildren;
     private String query;
@@ -72,6 +72,12 @@ public class DisplayReportTree extends JFrame {
         exitMenuItem.addActionListener(menuListener);
         fileMenu.add(exitMenuItem);
 
+        //Строка состояния
+        jp_status = new JPanel();
+        jp_status.setLayout(new BorderLayout());
+        lb_status = new JLabel("...");
+        jp_status.add(lb_status, BorderLayout.WEST);
+        jp_status.setBorder(new BevelBorder(BevelBorder.LOWERED));
 
         cat_tree = new JTree();
         per_table = new JTable();
@@ -116,6 +122,7 @@ public class DisplayReportTree extends JFrame {
         );
         container.add(splitPane);
         container.add(toolbar, BorderLayout.NORTH);
+        container.add(jp_status, BorderLayout.SOUTH);
         //container.add(new JScrollPane(cat_tree), BorderLayout.CENTER);
 
         setJMenuBar(menuBar);
@@ -142,7 +149,7 @@ public class DisplayReportTree extends JFrame {
     }
 
     public DefaultMutableTreeNode processHierarchy(Object[] hierarchy) {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode("Заппросы");
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode("Запросы");
         try {
             DefaultMutableTreeNode child, grandchild;
             List<Report> list = reportDAO.findAll();
@@ -173,12 +180,12 @@ public class DisplayReportTree extends JFrame {
         enter.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //JOptionPane.showMessageDialog(DisplayReportTree.this, "You chose the letter: ");
                 try {
                         Connection conn = sqLiteJDBC.getConn();
                         Statement statement = conn.createStatement();
                         ResultSet rs = statement.executeQuery(query);
                         per_table.setModel(buildTableModel(rs));
+                        lb_status.setText("Количество строк: " + per_table.getRowCount());
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -320,12 +327,22 @@ public class DisplayReportTree extends JFrame {
         return new DefaultTableModel(data, columnNames);
     }
 
-    static class MenuActionListener implements ActionListener {
+    class MenuActionListener implements ActionListener {
         public void actionPerformed (ActionEvent actionEvent) {
             System.out.println ("Selected: " + actionEvent.getActionCommand());
             if(actionEvent.getActionCommand() == "Exit") {
                 System.exit(0);
             }
+
+            if(actionEvent.getActionCommand() == "Настройка") {
+
+                SettingsBD dialogSetting = new SettingsBD(DisplayReportTree.this);
+                dialogSetting.setVisible(true);
+                if (dialogSetting.isModalOk()) {
+                    System.out.println("Ok");
+                }
+            }
+
         }
     }
 
