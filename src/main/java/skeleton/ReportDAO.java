@@ -42,6 +42,11 @@ public class ReportDAO extends AbstractDAO<Report> {
     }
 
     @Override
+    public Report findEntityByName(String name) {
+        return null;
+    }
+
+    @Override
     public boolean delete(int id) {
         return false;
     }
@@ -52,7 +57,7 @@ public class ReportDAO extends AbstractDAO<Report> {
     }
 
     @Override
-    public boolean create(Report entity) {
+    public boolean create() {
         return false;
     }
 

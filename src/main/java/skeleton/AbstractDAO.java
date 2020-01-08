@@ -13,9 +13,10 @@ public abstract class AbstractDAO<T extends Entity> {
     }
     public  abstract List<T> findAll();
     public abstract T findEntityById(int id);
+    public abstract T findEntityByName(String name);
     public abstract boolean delete(int id);
     public abstract boolean delete(T entity);
-    public abstract boolean create(T entity);
+    public abstract boolean create();
     public abstract boolean insert(T entity);
     public abstract T update(T entity);
 

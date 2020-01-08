@@ -71,6 +71,11 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
     }
 
     @Override
+    public SubReport findEntityByName(String name) {
+        return null;
+    }
+
+    @Override
     public boolean delete(int id) {
         return false;
     }
@@ -81,7 +86,7 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
     }
 
     @Override
-    public boolean create(SubReport entity) {
+    public boolean create() {
         return false;
     }
 

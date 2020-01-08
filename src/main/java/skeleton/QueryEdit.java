@@ -21,7 +21,8 @@ public class QueryEdit extends JDialog {
         // метку наверх
         c.add(new JLabel("Edit SQL"), BorderLayout.NORTH);
         // две кнопки в дополнительную панель
-        JPanel jp = new JPanel();
+        JPanel jp_button = new JPanel();
+        jp_button.setLayout(new BorderLayout());
 
         JButton jbtOk = new JButton("Ok");
         jbtOk.addActionListener(new AbstractAction() {
@@ -31,7 +32,6 @@ public class QueryEdit extends JDialog {
                 modalOk = true;
             }
         }); // назначаем обработчик события
-        jp.add(jbtOk, BorderLayout.WEST);
 
         JButton jbtCancel = new JButton("Cancel");
         jbtCancel.addActionListener(new AbstractAction() {
@@ -41,9 +41,17 @@ public class QueryEdit extends JDialog {
             }
         }); // назначаем обработчик события
 
-        jp.add(jbtCancel, BorderLayout.LINE_END);
+        Container box = Box.createHorizontalBox();
+        box.add(Box.createHorizontalGlue());
+        box.add(jbtOk);
+        box.add(Box.createHorizontalGlue());
+        box.add(jbtCancel);
+        jp_button.add(box, BorderLayout.EAST);
+
+
         // добавляем панель вниз
-        c.add(jp, BorderLayout.SOUTH);
+        c.add(jp_button, BorderLayout.SOUTH);
+
         // помещаем текст. поле в область прокрутки
         // а область прокрутки в центр окна,
         // BorderLayout.CENTER значение по умолчанию
@@ -57,6 +65,7 @@ public class QueryEdit extends JDialog {
         //setDefaultCloseOperation(EXIT_ON_CLOSE);
         //pack();
         setModal(true);
+        setLocationRelativeTo(owner);
         setSize(640, 480);
         //setVisible(true);
     }

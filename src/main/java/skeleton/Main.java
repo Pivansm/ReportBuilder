@@ -1,5 +1,6 @@
 package skeleton;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -37,14 +38,17 @@ public class Main {
 
         //createNewTable();
         SQLiteJDBC sqLiteJDBC = new SQLiteJDBC();
+        File currSqlite = new File("dbsqlrb.sqlite");
+        if(!currSqlite.exists()) {
+            System.out.println("В текущей папке нет БД dbsqlrb.sqlite!");
+            System.out.println("создаем новую БД!");
+            sqLiteJDBC.createTbl();
+        }
+        else
+        {
+            System.out.println("БД dbsqlrb.sqlite Ok!");
+        }
         //sqLiteJDBC.createTbl();
-
-        ReportDAO reportDAO = new ReportDAO(sqLiteJDBC.getConn());
-        reportDAO.findAll();
-
-
-        Report report = new Report(1, "Узел2");
-        reportDAO.insert(report);
 
     }
 

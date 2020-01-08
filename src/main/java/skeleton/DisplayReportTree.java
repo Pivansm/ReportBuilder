@@ -208,14 +208,16 @@ public class DisplayReportTree extends JFrame {
         nwreport.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String newRep = JOptionPane.showInputDialog(DisplayReportTree.this,"<html><h2>Новый отчет");
+                String newRep = JOptionPane.showInputDialog(DisplayReportTree.this,"<html><h2>Новый отчет", "Отчет", JOptionPane.QUESTION_MESSAGE);
                 DefaultMutableTreeNode parent = getSelectedNode();
                 if(parent == null) {
                     JOptionPane.showMessageDialog(DisplayReportTree.this, "Select ar era.","Error", JOptionPane.ERROR_MESSAGE);
                 }
                 else {
-                    newReport(newRep);
-                    treeModel.insertNodeInto(new DefaultMutableTreeNode(newRep), parent, parent.getChildCount());
+                    if(newRep != null) {
+                        newReport(newRep);
+                        treeModel.insertNodeInto(new DefaultMutableTreeNode(newRep), parent, parent.getChildCount());
+                    }
                 }
             }
         });
@@ -336,7 +338,8 @@ public class DisplayReportTree extends JFrame {
 
             if(actionEvent.getActionCommand() == "Настройка") {
 
-                SettingsBD dialogSetting = new SettingsBD(DisplayReportTree.this);
+                SettingsBD dialogSetting = new SettingsBD(DisplayReportTree.this, sqLiteJDBC.getConn());
+
                 dialogSetting.setVisible(true);
                 if (dialogSetting.isModalOk()) {
                     System.out.println("Ok");
