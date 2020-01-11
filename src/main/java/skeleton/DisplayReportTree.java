@@ -74,8 +74,8 @@ public class DisplayReportTree extends JInternalFrame {
         // Блокируем возможность перетаскивания панели
         toolbar.setFloatable(false);
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Report Builder");
+        //setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        //setTitle("Report Builder");
 
         popupMenu = createPopupMenu();
 
@@ -108,10 +108,9 @@ public class DisplayReportTree extends JInternalFrame {
         container.add(jp_status, BorderLayout.SOUTH);
         //container.add(new JScrollPane(cat_tree), BorderLayout.CENTER);
 
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        //setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(640, 480);
         setVisible(true);
-
 
     }// </editor-fold>
 

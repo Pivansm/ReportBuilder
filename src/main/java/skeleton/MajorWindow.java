@@ -4,9 +4,7 @@ import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.sql.SQLException;
 
 public class MajorWindow extends JFrame {
@@ -51,8 +49,22 @@ public class MajorWindow extends JFrame {
         //newReportItem.addActionListener(menuListener);
         reports.add(newReport);
 
+        /*try
+        {
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.metal.MetalLookAndFeel");
+        }
+        catch(Exception e){e.printStackTrace();};*/
+
         Container container = getContentPane();
         container.add(desktopPane, BorderLayout.CENTER);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                //super.windowClosing(e);
+                shutDown();
+            }
+        });
 
         Toolkit toolkit = getToolkit();
         Dimension dimension = toolkit.getScreenSize();
@@ -65,6 +77,9 @@ public class MajorWindow extends JFrame {
 
     }
 
+    private void shutDown() {
+        System.exit(0);
+    }
 
     private class MenuActionListener implements ActionListener {
         public void actionPerformed (ActionEvent actionEvent) {
@@ -90,18 +105,27 @@ public class MajorWindow extends JFrame {
     private DisplayReportTree createDisplayReport() throws SQLException, ClassNotFoundException {
 
         DisplayReportTree displayReportTree = new DisplayReportTree();
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         displayReportTree.addInternalFrameListener(new InternalFrameAdapter() {
             @Override
             public void internalFrameActivated(InternalFrameEvent e) {
-                super.internalFrameActivated(e);
+                //super.internalFrameActivated(e);
+                System.out.println("Activate Windows!");
                 newReport.setEnabled(true);
             }
 
             @Override
             public void internalFrameDeactivated(InternalFrameEvent e) {
-                super.internalFrameDeactivated(e);
+                //super.internalFrameDeactivated(e);
+                System.out.println("Deactivated Windows!");
                 newReport.setEnabled(false);
+            }
+
+            @Override
+            public void internalFrameClosed(InternalFrameEvent e) {
+                super.internalFrameClosed(e);
+                //newReport.setEnabled(false);
+                //newReport.dispose();
             }
         });
 
@@ -118,7 +142,8 @@ public class MajorWindow extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                DisplayReportTree displayReportTree = createDisplayReport();
+                DisplayReportTree displayReportTree = new DisplayReportTree();
+                //setDefaultCloseOperation(EXIT_ON_CLOSE);
                 desktopPane.add(displayReportTree);
                 displayReportTree.setVisible(true);
 
