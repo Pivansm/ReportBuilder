@@ -25,10 +25,8 @@ public class Main {
         {
             System.out.println("БД dbsqlrb.sqlite Ok!");
         }
-        //sqLiteJDBC.createTbl();
-
+        //Главное рабочее окно
         MajorWindow majorWindow = new MajorWindow();
-
     }
 
 }

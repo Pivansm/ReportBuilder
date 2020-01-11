@@ -14,6 +14,8 @@ public class MajorWindow extends JFrame {
     private JMenuBar menuBar;
     private JDesktopPane desktopPane;
 
+    Action newReport;
+
     SQLiteJDBC sqLiteJDBC;
 
     public MajorWindow() throws SQLException, ClassNotFoundException {
@@ -24,6 +26,7 @@ public class MajorWindow extends JFrame {
         desktopPane = new JDesktopPane();
 
         ActionListener menuListener = new MajorWindow.MenuActionListener();
+        newReport = new NewReport();
 
         //Меню с настройками
         menuBar = new JMenuBar();
@@ -44,9 +47,9 @@ public class MajorWindow extends JFrame {
         JMenu reports = new JMenu("Отчеты");
         reports.setMnemonic(KeyEvent.VK_O);
         menuBar.add(reports);
-        JMenuItem newReportItem = new JMenuItem("Построитель", KeyEvent.VK_R);
-        newReportItem.addActionListener(menuListener);
-        reports.add(newReportItem);
+        //JMenuItem newReportItem = new JMenuItem("Построитель", KeyEvent.VK_R);
+        //newReportItem.addActionListener(menuListener);
+        reports.add(newReport);
 
         Container container = getContentPane();
         container.add(desktopPane, BorderLayout.CENTER);
@@ -81,29 +84,49 @@ public class MajorWindow extends JFrame {
                 }
             }
 
+        }
+    }
 
-            if(actionEvent.getActionCommand() == "Построитель") {
-                System.out.println("Построитель");
-                try {
-                    DisplayReportTree displayReportTree = new DisplayReportTree();
+    private DisplayReportTree createDisplayReport() throws SQLException, ClassNotFoundException {
 
-                    desktopPane.add(displayReportTree);
-
-                    /*displayReportTree.addInternalFrameListener(new InternalFrameAdapter() {
-                        @Override
-                        public void internalFrameActivated(InternalFrameEvent e) {
-                            super.internalFrameActivated(e);
-
-                        }
-                    });*/
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
+        DisplayReportTree displayReportTree = new DisplayReportTree();
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        displayReportTree.addInternalFrameListener(new InternalFrameAdapter() {
+            @Override
+            public void internalFrameActivated(InternalFrameEvent e) {
+                super.internalFrameActivated(e);
+                newReport.setEnabled(true);
             }
 
+            @Override
+            public void internalFrameDeactivated(InternalFrameEvent e) {
+                super.internalFrameDeactivated(e);
+                newReport.setEnabled(false);
+            }
+        });
+
+        return displayReportTree;
+    }
+
+    private class NewReport extends AbstractAction {
+
+        public NewReport() {
+           putValue(NAME, "Построитель");
+           putValue(SHORT_DESCRIPTION, "Построитель отчетов");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                DisplayReportTree displayReportTree = createDisplayReport();
+                desktopPane.add(displayReportTree);
+                displayReportTree.setVisible(true);
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } catch (ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
 
         }
     }
