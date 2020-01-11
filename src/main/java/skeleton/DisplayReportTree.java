@@ -1,7 +1,5 @@
 package skeleton;
 
-import swing.PopupSample;
-
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.TreeSelectionEvent;
@@ -16,14 +14,13 @@ import java.sql.*;
 import java.util.List;
 import java.util.Vector;
 
-public class DisplayReportTree extends JFrame {
+public class DisplayReportTree extends JInternalFrame {
 
     private final String STYLE_heading = "heading", STYLE_normal = "normal", FONT_style = "Times New Roman";
 
     Connection conn = null;
     Statement stm = null;
 
-    private JMenuBar menuBar;
     private JToolBar toolbar;
     private JTree cat_tree;
     private JTable per_table;
@@ -41,6 +38,7 @@ public class DisplayReportTree extends JFrame {
     SubReportDAO subReportDAO;
 
     public DisplayReportTree() throws SQLException, ClassNotFoundException {
+        super("Builder", true, true);
         sqLiteJDBC = new SQLiteJDBC();
         reportDAO = new ReportDAO(sqLiteJDBC.getConn());
         subReportDAO = new SubReportDAO(sqLiteJDBC.getConn());
@@ -56,22 +54,6 @@ public class DisplayReportTree extends JFrame {
     //@SuppressWarnings("unchecked")
     private void initComponents() {
 
-        //Меню
-        ActionListener menuListener = new MenuActionListener();
-        menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-        fileMenu.setMnemonic(KeyEvent.VK_F);
-        menuBar.add(fileMenu);
-        JMenuItem newMenuItem = new JMenuItem("Настройка", KeyEvent.VK_N);
-        newMenuItem.addActionListener(menuListener);
-        fileMenu.add(newMenuItem);
-        // Separator
-        fileMenu.addSeparator();
-        // File->Exit, X - Mnemonic
-        JMenuItem exitMenuItem = new JMenuItem("Exit", KeyEvent.VK_X);
-        exitMenuItem.addActionListener(menuListener);
-        fileMenu.add(exitMenuItem);
-
         //Строка состояния
         jp_status = new JPanel();
         jp_status.setLayout(new BorderLayout());
@@ -83,8 +65,9 @@ public class DisplayReportTree extends JFrame {
         per_table = new JTable();
         toolbar = new JToolBar();
 
-        JButton enterButton = new JButton("Выполнить");
-        toolbar.add(enterButton);
+        //JButton enterButton = new JButton("Выполнить");
+        PerformQuery performQuery = new PerformQuery();
+        toolbar.add(performQuery);
         toolbar.addSeparator();
         String[] export = new String[] {"Excel(xlsx)", "Excel(xml)", "File(csv)"};
         toolbar.add(new JComboBox<String> (export));
@@ -125,7 +108,6 @@ public class DisplayReportTree extends JFrame {
         container.add(jp_status, BorderLayout.SOUTH);
         //container.add(new JScrollPane(cat_tree), BorderLayout.CENTER);
 
-        setJMenuBar(menuBar);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(640, 480);
         setVisible(true);
@@ -228,7 +210,7 @@ public class DisplayReportTree extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-               QueryEdit dialog = new QueryEdit(DisplayReportTree.this);
+               QueryEdit dialog = new QueryEdit(null);
                dialog.setQuery(query);
                 //dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
                 dialog.setVisible(true);
@@ -329,29 +311,27 @@ public class DisplayReportTree extends JFrame {
         return new DefaultTableModel(data, columnNames);
     }
 
-    class MenuActionListener implements ActionListener {
-        public void actionPerformed (ActionEvent actionEvent) {
-            System.out.println ("Selected: " + actionEvent.getActionCommand());
-            if(actionEvent.getActionCommand() == "Exit") {
-                System.exit(0);
-            }
+    private class PerformQuery extends AbstractAction {
 
-            if(actionEvent.getActionCommand() == "Настройка") {
+        public PerformQuery() {
+            putValue(NAME, "Выполнить");
+            putValue(SHORT_DESCRIPTION, "Выполнить");
+        }
 
-                SettingsBD dialogSetting = new SettingsBD(DisplayReportTree.this, sqLiteJDBC.getConn());
-
-                dialogSetting.setVisible(true);
-                if (dialogSetting.isModalOk()) {
-                    System.out.println("Ok");
-                }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                Connection conn = sqLiteJDBC.getConn();
+                Statement statement = conn.createStatement();
+                ResultSet rs = statement.executeQuery(query);
+                per_table.setModel(buildTableModel(rs));
+                lb_status.setText("Количество строк: " + per_table.getRowCount());
+            } catch (SQLException ex) {
+                ex.printStackTrace();
             }
 
         }
     }
 
-
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        new DisplayReportTree();
-    }
 
 }
