@@ -5,6 +5,8 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import javax.swing.text.Style;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -20,6 +22,8 @@ public class DisplayReportTree extends JInternalFrame {
 
     Connection conn = null;
     Statement stm = null;
+
+    PerformQuery performQuery;
 
     private JToolBar toolbar;
     private JTree cat_tree;
@@ -66,7 +70,7 @@ public class DisplayReportTree extends JInternalFrame {
         toolbar = new JToolBar();
 
         //JButton enterButton = new JButton("Выполнить");
-        PerformQuery performQuery = new PerformQuery();
+        performQuery = new PerformQuery();
         toolbar.add(performQuery);
         toolbar.addSeparator();
         String[] export = new String[] {"Excel(xlsx)", "Excel(xml)", "File(csv)"};
@@ -157,22 +161,7 @@ public class DisplayReportTree extends JInternalFrame {
 
     private JPopupMenu createPopupMenu() {
         JPopupMenu pm = new JPopupMenu();
-        JMenuItem enter = new JMenuItem("Выполнить");
-        enter.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                        Connection conn = sqLiteJDBC.getConn();
-                        Statement statement = conn.createStatement();
-                        ResultSet rs = statement.executeQuery(query);
-                        per_table.setModel(buildTableModel(rs));
-                        lb_status.setText("Количество строк: " + per_table.getRowCount());
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-        pm.add(enter);
+        pm.add(performQuery);
         pm.addSeparator();
         JMenuItem nwusel = new JMenuItem("Новый узел");
         nwusel.addActionListener(new AbstractAction() {
@@ -323,7 +312,10 @@ public class DisplayReportTree extends JInternalFrame {
                 Connection conn = sqLiteJDBC.getConn();
                 Statement statement = conn.createStatement();
                 ResultSet rs = statement.executeQuery(query);
-                per_table.setModel(buildTableModel(rs));
+                TableModel model = buildTableModel(rs);
+                RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
+                per_table.setModel(model);
+                per_table.setRowSorter(sorter);
                 lb_status.setText("Количество строк: " + per_table.getRowCount());
             } catch (SQLException ex) {
                 ex.printStackTrace();
