@@ -1,6 +1,7 @@
 package skeleton;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
@@ -9,16 +10,24 @@ import java.sql.SQLException;
 
 public class MajorWindow extends JFrame {
 
+    private String reportConnect;
     private JMenuBar menuBar;
+    private JPanel jp_status;
+    private JLabel lb_status;
     private JDesktopPane desktopPane;
 
     Action newReport;
 
     SQLiteJDBC sqLiteJDBC;
+    SettingsDAO settingsDAO;
+    private Setting setting;
 
     public MajorWindow() throws SQLException, ClassNotFoundException {
         super("Report Builder");
         sqLiteJDBC = new SQLiteJDBC();
+        settingsDAO = new SettingsDAO(sqLiteJDBC.getConn());
+        setting = settingsDAO.findEntityByCurrent();
+        reportConnect = "" + setting.getTypeJDBC();
 
         //Рабочий стол
         desktopPane = new JDesktopPane();
@@ -66,6 +75,14 @@ public class MajorWindow extends JFrame {
             }
         });
 
+        //Строка состояния
+        jp_status = new JPanel();
+        jp_status.setLayout(new BorderLayout());
+        lb_status = new JLabel(reportConnect);
+        jp_status.add(lb_status, BorderLayout.WEST);
+        jp_status.setBorder(new BevelBorder(BevelBorder.LOWERED));
+        container.add(jp_status, BorderLayout.SOUTH);
+
         Toolkit toolkit = getToolkit();
         Dimension dimension = toolkit.getScreenSize();
 
@@ -95,7 +112,9 @@ public class MajorWindow extends JFrame {
 
                 dialogSetting.setVisible(true);
                 if (dialogSetting.isModalOk()) {
-                    System.out.println("Ok");
+
+                    reportConnect = dialogSetting.getConnectJDBC();
+                    System.out.println("Ok: " +  reportConnect);
                 }
             }
 

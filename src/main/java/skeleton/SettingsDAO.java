@@ -11,10 +11,12 @@ public class SettingsDAO extends AbstractDAO<Setting> {
 
     public static final String SQL_FIND_ALL = "SELECT * FROM SETTING";
     public static final String SQL_FIND_TYPE = "SELECT * FROM SETTING WHERE VTYPEJDBC = ?";
-    public static final String SQL_CREATE_TBL = "CREATE TABLE IF NOT EXISTS SETTING(VTYPEJDBC varchar(100), VSERVER varchar(250), VBASE varchar(200), VUSERNAME varchar(150), VPASSVORD varchar(200))";
+    public static final String SQL_FIND_CURRENT = "SELECT * FROM SETTING WHERE BCURR = 1";
+    public static final String SQL_CREATE_TBL = "CREATE TABLE IF NOT EXISTS SETTING(VTYPEJDBC varchar(100), VSERVER varchar(250), VBASE varchar(200), VUSERNAME varchar(150), VPASSVORD varchar(200), BCURR INT)";
     public static final String SQL_CREATE_UI = "CREATE UNIQUE INDEX IF NOT EXISTS UI_TYPEJDBC ON SETTING(VTYPEJDBC) ";
     public static final String SQL_INSERT = "INSERT INTO SETTING (VTYPEJDBC, VSERVER, VBASE) VALUES (?, ?, ?)";
-    public static final String SQL_UPDATE = "UPDATE SETTING SET VSERVER = ?, VBASE = ? WHERE VTYPEJDBC = ?";
+    public static final String SQL_UPDATE = "UPDATE SETTING SET VSERVER = ?, VBASE = ?, BCURR = 1 WHERE VTYPEJDBC = ?";
+    public static final String SQL_UPDATE_CURR_ALL = "UPDATE SETTING SET BCURR = 0";
 
     public SettingsDAO(Connection connection) {
         super(connection);
@@ -53,27 +55,54 @@ public class SettingsDAO extends AbstractDAO<Setting> {
     @Override
     public Setting findEntityByName(String typeJDBC) {
 
-        Setting setting = new Setting();;
+        Setting setting = new Setting();
         try {
 
             PreparedStatement statement = connection.prepareStatement(SQL_FIND_TYPE);
             statement.setString(1, typeJDBC);
             ResultSet rs = statement.executeQuery();
 
-            while (rs.next()) {
+            //while (rs.next()) {
+            if(!rs.next()) return null;
+
                 setting = new Setting();
                 setting.setTypeJDBC(rs.getString("VTYPEJDBC"));
                 setting.setServerName(rs.getString("VSERVER"));
                 setting.setBaseName(rs.getString("VBASE"));
                 setting.setUserName(rs.getString("VUSERNAME"));
                 setting.setPassword(rs.getString("VPASSVORD"));
-            }
+            //}
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return setting;
     }
+
+
+    public Setting findEntityByCurrent() {
+
+        Setting setting = new Setting();
+        try {
+
+            PreparedStatement statement = connection.prepareStatement(SQL_FIND_CURRENT);
+            ResultSet rs = statement.executeQuery();
+
+            if(!rs.next()) return null;
+
+            setting = new Setting();
+            setting.setTypeJDBC(rs.getString("VTYPEJDBC"));
+            setting.setServerName(rs.getString("VSERVER"));
+            setting.setBaseName(rs.getString("VBASE"));
+            setting.setUserName(rs.getString("VUSERNAME"));
+            setting.setPassword(rs.getString("VPASSVORD"));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return setting;
+    }
+
 
     @Override
     public boolean delete(int id) {
@@ -110,6 +139,7 @@ public class SettingsDAO extends AbstractDAO<Setting> {
             statement.setString(1, entity.getTypeJDBC());
             statement.setString(2, entity.getServerName());
             statement.setString(3, entity.getBaseName());
+            //statement.setString(3, entity.getBaseName());
             statement.execute();
             flag = true;
 
@@ -126,12 +156,15 @@ public class SettingsDAO extends AbstractDAO<Setting> {
 
         try {
 
+            updateCurrent();
+            //Основные изменения
             PreparedStatement statement = connection.prepareStatement(SQL_UPDATE);
             statement.setString(1, entity.getServerName());
             statement.setString(2, entity.getBaseName());
             //По фильтру
-            statement.setString(2, entity.getTypeJDBC());
+            statement.setString(3, entity.getTypeJDBC());
             statement.execute();
+            statement.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -139,6 +172,19 @@ public class SettingsDAO extends AbstractDAO<Setting> {
 
 
         return null;
+    }
+
+
+    public boolean updateCurrent() {
+        try {
+            PreparedStatement statement = connection.prepareStatement(SQL_UPDATE_CURR_ALL);
+            statement.execute();
+            statement.close();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 

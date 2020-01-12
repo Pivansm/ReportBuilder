@@ -12,6 +12,7 @@ public class SettingsBD extends JDialog {
     private Connection connection;
     SettingsDAO settingsDAO;
     private boolean modalOk;
+    private boolean settingUpdate;
 
     public SettingsBD(JFrame owner, Connection connection) {
 
@@ -19,9 +20,12 @@ public class SettingsBD extends JDialog {
         setting = new Setting();
         this.connection = connection;
         settingsDAO = new SettingsDAO(connection);
-
+        settingUpdate = true;
         if(!settingsDAO.isTable("SETTING"))
             createSettingsDB();
+        else {
+            setting = settingsDAO.findEntityByCurrent();
+        }
 
         JPanel jp_setting = new JPanel();
         jp_setting.setLayout(new GridLayout(4, 2));
@@ -46,14 +50,14 @@ public class SettingsBD extends JDialog {
         labelPass.setDisplayedMnemonic(KeyEvent.VK_P);
         labelPass.setLabelFor(textFieldPass);
 
-        jp_setting.add(label, 0, 0);
-        jp_setting.add(textField, 0, 1);
-        jp_setting.add(labelBase, 1, 0);
-        jp_setting.add(textFieldBase, 1, 1);
-        jp_setting.add(labelUser, 2, 0);
-        jp_setting.add(textFieldUser, 2, 1);
-        jp_setting.add(labelPass, 3, 0);
-        jp_setting.add(textFieldPass, 3, 1);
+        jp_setting.add(label);
+        jp_setting.add(textField);
+        jp_setting.add(labelBase);
+        jp_setting.add(textFieldBase);
+        jp_setting.add(labelUser);
+        jp_setting.add(textFieldUser);
+        jp_setting.add(labelPass);
+        jp_setting.add(textFieldPass);
 
         //Create the radio buttons.
         JRadioButton postgresButton = new JRadioButton("Postgres");
@@ -63,17 +67,27 @@ public class SettingsBD extends JDialog {
         oracleButton.setMnemonic(KeyEvent.VK_O);
         JRadioButton mssqlButton = new JRadioButton("MsSql");
         mssqlButton.setMnemonic(KeyEvent.VK_M);
+        JRadioButton ownerButton = new JRadioButton("Owner");
+        ownerButton.setMnemonic(KeyEvent.VK_W);
 
         //Group the radio buttons.
         ButtonGroup group = new ButtonGroup();
         group.add(postgresButton);
         group.add(oracleButton);
         group.add(mssqlButton);
+        group.add(ownerButton);
 
         postgresButton.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setting.setTypeJDBC("jdbc:postgresql");
+                Setting settingPostgres = settingsDAO.findEntityByName(setting.getTypeJDBC());
+                settingUpdate = false;
+                if(settingPostgres != null) {
+                    textField.setText(settingPostgres.getServerName());
+                    textFieldBase.setText(settingPostgres.getBaseName());
+                    settingUpdate = true;
+                }
             }
         });
 
@@ -81,6 +95,13 @@ public class SettingsBD extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setting.setTypeJDBC("jdbc:oracle");
+                Setting settingOracle = settingsDAO.findEntityByName(setting.getTypeJDBC());
+                settingUpdate = false;
+                if(settingOracle != null) {
+                    textField.setText(settingOracle.getServerName());
+                    textFieldBase.setText(settingOracle.getBaseName());
+                    settingUpdate = true;
+                }
             }
         });
 
@@ -88,6 +109,30 @@ public class SettingsBD extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setting.setTypeJDBC("jdbc:sqlserver");
+                Setting settingMssql = settingsDAO.findEntityByName(setting.getTypeJDBC());
+                settingUpdate = false;
+                if(settingMssql != null) {
+                    textField.setText(settingMssql.getServerName());
+                    textFieldBase.setText(settingMssql.getBaseName());
+                    settingUpdate = true;
+                }
+            }
+        });
+
+        ownerButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setting.setTypeJDBC("jdbc:sqlite");
+                settingUpdate = false;
+                textField.setText(null);
+                textFieldBase.setText(null);
+                Setting settingOwner = settingsDAO.findEntityByName(setting.getTypeJDBC());
+                connectJDBC ="" + setting.getTypeJDBC() + ":" + settingOwner.getBaseName();
+                if(settingOwner != null) {
+                    textField.setText(settingOwner.getServerName());
+                    textFieldBase.setText(settingOwner.getBaseName());
+                    settingUpdate = true;
+                }
             }
         });
 
@@ -96,6 +141,7 @@ public class SettingsBD extends JDialog {
         radioPanel.add(postgresButton);
         radioPanel.add(oracleButton);
         radioPanel.add(mssqlButton);
+        radioPanel.add(ownerButton);
 
 
         JPanel jp_button = new JPanel();
@@ -115,7 +161,15 @@ public class SettingsBD extends JDialog {
         jbtSave.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                Setting settingSave = new Setting();
+                settingSave.setTypeJDBC(setting.getTypeJDBC());
+                settingSave.setServerName(textField.getText());
+                settingSave.setBaseName(textFieldBase.getText());
+                if(settingUpdate) {
+                    settingsDAO.update(settingSave);
+                }
+                else
+                    settingsDAO.insert(settingSave);
             }
         }); // назначаем обработчик события
 
@@ -162,5 +216,9 @@ public class SettingsBD extends JDialog {
         if(settingsDAO.create()) {
             System.out.println("Ok!");
         }
+    }
+
+    public String getConnectJDBC() {
+        return connectJDBC;
     }
 }
