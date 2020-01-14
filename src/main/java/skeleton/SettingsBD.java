@@ -31,12 +31,12 @@ public class SettingsBD extends JDialog {
         jp_setting.setLayout(new GridLayout(4, 2));
 
         JLabel label = new JLabel("Сервер");
-        JTextField textField = new JTextField();
+        JTextField textField = new JTextField(setting.getServerName());
         label.setDisplayedMnemonic(KeyEvent.VK_U);
         label.setLabelFor(textField);
 
         JLabel labelBase = new JLabel("База");
-        JTextField textFieldBase = new JTextField();
+        JTextField textFieldBase = new JTextField(setting.getBaseName());
         labelBase.setDisplayedMnemonic(KeyEvent.VK_U);
         labelBase.setLabelFor(textFieldBase);
 
@@ -62,13 +62,14 @@ public class SettingsBD extends JDialog {
         //Create the radio buttons.
         JRadioButton postgresButton = new JRadioButton("Postgres");
         postgresButton.setMnemonic(KeyEvent.VK_G);
-        postgresButton.setSelected(true);
+
         JRadioButton oracleButton = new JRadioButton("Oracle");
         oracleButton.setMnemonic(KeyEvent.VK_O);
         JRadioButton mssqlButton = new JRadioButton("MsSql");
         mssqlButton.setMnemonic(KeyEvent.VK_M);
         JRadioButton ownerButton = new JRadioButton("Owner");
         ownerButton.setMnemonic(KeyEvent.VK_W);
+        ownerButton.setSelected(true);
 
         //Group the radio buttons.
         ButtonGroup group = new ButtonGroup();

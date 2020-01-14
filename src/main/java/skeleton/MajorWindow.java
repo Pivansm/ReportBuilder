@@ -27,7 +27,7 @@ public class MajorWindow extends JFrame {
         sqLiteJDBC = new SQLiteJDBC();
         settingsDAO = new SettingsDAO(sqLiteJDBC.getConn());
         setting = settingsDAO.findEntityByCurrent();
-        reportConnect = "" + setting.getTypeJDBC();
+        setReportConnect(setting);
 
         //Рабочий стол
         desktopPane = new JDesktopPane();
@@ -123,7 +123,7 @@ public class MajorWindow extends JFrame {
 
     private DisplayReportTree createDisplayReport() throws SQLException, ClassNotFoundException {
 
-        DisplayReportTree displayReportTree = new DisplayReportTree();
+        DisplayReportTree displayReportTree = new DisplayReportTree(reportConnect);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         displayReportTree.addInternalFrameListener(new InternalFrameAdapter() {
             @Override
@@ -161,9 +161,10 @@ public class MajorWindow extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                DisplayReportTree displayReportTree = new DisplayReportTree();
+                DisplayReportTree displayReportTree = new DisplayReportTree(reportConnect);
                 //setDefaultCloseOperation(EXIT_ON_CLOSE);
                 desktopPane.add(displayReportTree);
+
                 displayReportTree.setVisible(true);
 
             } catch (SQLException ex) {
@@ -175,5 +176,16 @@ public class MajorWindow extends JFrame {
         }
     }
 
+    public String getReportConnect() {
+        return reportConnect;
+    }
 
+    private void setReportConnect(Setting setting) {
+
+        reportConnect = "" + setting.getTypeJDBC() + ":";
+        if(!setting.getServerName().equals(""))
+            reportConnect += "" + setting.getServerName();
+        if(setting.getBaseName() != null)
+            reportConnect += "" + setting.getBaseName();
+    }
 }

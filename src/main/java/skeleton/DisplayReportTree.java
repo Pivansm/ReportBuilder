@@ -20,7 +20,7 @@ public class DisplayReportTree extends JInternalFrame {
 
     private final String STYLE_heading = "heading", STYLE_normal = "normal", FONT_style = "Times New Roman";
 
-    Connection conn = null;
+    Connection connReport = null;
     Statement stm = null;
 
     PerformQuery performQuery;
@@ -40,8 +40,9 @@ public class DisplayReportTree extends JInternalFrame {
     SQLiteJDBC sqLiteJDBC;
     ReportDAO reportDAO;
     SubReportDAO subReportDAO;
+    private String reportConnect;
 
-    public DisplayReportTree() throws SQLException, ClassNotFoundException {
+    public DisplayReportTree(String reportConnect) throws SQLException, ClassNotFoundException {
         super("Builder", true, true);
         sqLiteJDBC = new SQLiteJDBC();
         reportDAO = new ReportDAO(sqLiteJDBC.getConn());
@@ -49,8 +50,10 @@ public class DisplayReportTree extends JInternalFrame {
         idParent = 0;
         idCurrChildren = 0;
         query = "SELECT * FROM QUREPORT";
+        this.reportConnect = reportConnect;
         initComponents();
         pop_tree();
+        connectionReport();
     }
 
 
@@ -117,6 +120,19 @@ public class DisplayReportTree extends JInternalFrame {
         setVisible(true);
 
     }// </editor-fold>
+
+    private boolean connectionReport() {
+        try {
+            connReport = DriverManager.getConnection(reportConnect);
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
 
     public final void pop_tree() {
         try {
@@ -309,8 +325,9 @@ public class DisplayReportTree extends JInternalFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                Connection conn = sqLiteJDBC.getConn();
-                Statement statement = conn.createStatement();
+                //Connection conn = sqLiteJDBC.getConn();
+
+                Statement statement = connReport.createStatement();
                 ResultSet rs = statement.executeQuery(query);
                 TableModel model = buildTableModel(rs);
                 RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
@@ -324,5 +341,7 @@ public class DisplayReportTree extends JInternalFrame {
         }
     }
 
-
+    public void setReportConnect(String reportConnect) {
+        this.reportConnect = reportConnect;
+    }
 }
