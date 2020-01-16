@@ -146,11 +146,15 @@ public class SettingsBD extends JDialog {
                 settingUpdate = false;
                 textField.setText(null);
                 textFieldBase.setText(null);
+                textFieldUser.setText(null);
+                textFieldPass.setText(null);
                 Setting settingOwner = settingsDAO.findEntityByName(setting.getTypeJDBC());
                 connectJDBC ="" + setting.getTypeJDBC() + ":" + settingOwner.getBaseName();
                 if(settingOwner != null) {
                     textField.setText(settingOwner.getServerName());
                     textFieldBase.setText(settingOwner.getBaseName());
+                    textFieldUser.setText(null);
+                    textFieldPass.setText(null);
                     settingUpdate = true;
                 }
             }
