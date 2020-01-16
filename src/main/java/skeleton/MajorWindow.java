@@ -114,6 +114,8 @@ public class MajorWindow extends JFrame {
                 if (dialogSetting.isModalOk()) {
 
                     reportConnect = dialogSetting.getConnectJDBC();
+                    setting = dialogSetting.getSetting();
+
                     System.out.println("Ok: " +  reportConnect);
                 }
             }
@@ -123,7 +125,7 @@ public class MajorWindow extends JFrame {
 
     private DisplayReportTree createDisplayReport() throws SQLException, ClassNotFoundException {
 
-        DisplayReportTree displayReportTree = new DisplayReportTree(reportConnect);
+        DisplayReportTree displayReportTree = new DisplayReportTree(setting);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         displayReportTree.addInternalFrameListener(new InternalFrameAdapter() {
             @Override
@@ -161,7 +163,7 @@ public class MajorWindow extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                DisplayReportTree displayReportTree = new DisplayReportTree(reportConnect);
+                DisplayReportTree displayReportTree = new DisplayReportTree(setting);
                 //setDefaultCloseOperation(EXIT_ON_CLOSE);
                 desktopPane.add(displayReportTree);
 

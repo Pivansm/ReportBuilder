@@ -222,4 +222,9 @@ public class SettingsBD extends JDialog {
     public String getConnectJDBC() {
         return connectJDBC;
     }
+
+    public Setting getSetting() {
+        return setting;
+    }
+
 }

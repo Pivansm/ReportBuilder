@@ -22,6 +22,7 @@ public class DisplayReportTree extends JInternalFrame {
 
     Connection connReport = null;
     Statement stm = null;
+    private Setting setting;
 
     PerformQuery performQuery;
 
@@ -40,17 +41,16 @@ public class DisplayReportTree extends JInternalFrame {
     SQLiteJDBC sqLiteJDBC;
     ReportDAO reportDAO;
     SubReportDAO subReportDAO;
-    private String reportConnect;
 
-    public DisplayReportTree(String reportConnect) throws SQLException, ClassNotFoundException {
+    public DisplayReportTree(Setting setting) throws SQLException, ClassNotFoundException {
         super("Builder", true, true);
         sqLiteJDBC = new SQLiteJDBC();
         reportDAO = new ReportDAO(sqLiteJDBC.getConn());
         subReportDAO = new SubReportDAO(sqLiteJDBC.getConn());
+        this.setting = setting;
         idParent = 0;
         idCurrChildren = 0;
         query = "SELECT * FROM QUREPORT";
-        this.reportConnect = reportConnect;
         initComponents();
         pop_tree();
         connectionReport();
@@ -123,7 +123,8 @@ public class DisplayReportTree extends JInternalFrame {
 
     private boolean connectionReport() {
         try {
-            connReport = DriverManager.getConnection(reportConnect);
+
+            connReport = DriverManager.getConnection(setReportConnect(setting), setting.getUserName(), setting.getPassword());
             return true;
 
         } catch (SQLException e) {
@@ -341,7 +342,16 @@ public class DisplayReportTree extends JInternalFrame {
         }
     }
 
-    public void setReportConnect(String reportConnect) {
-        this.reportConnect = reportConnect;
+
+    private String setReportConnect(Setting setting) {
+        String result = "";
+        result = "" + setting.getTypeJDBC() + ":";
+        if(!setting.getServerName().equals(""))
+            result += "" + setting.getServerName();
+        if(setting.getBaseName() != null)
+            result += "" + setting.getBaseName();
+
+        return result;
     }
+
 }
