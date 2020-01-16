@@ -31,12 +31,12 @@ public class SettingsBD extends JDialog {
         jp_setting.setLayout(new GridLayout(4, 2));
 
         JLabel label = new JLabel("Сервер");
-        JTextField textField = new JTextField(setting.getServerName());
+        final JTextField textField = new JTextField(setting.getServerName());
         label.setDisplayedMnemonic(KeyEvent.VK_U);
         label.setLabelFor(textField);
 
         JLabel labelBase = new JLabel("База");
-        JTextField textFieldBase = new JTextField(setting.getBaseName());
+        final JTextField textFieldBase = new JTextField(setting.getBaseName());
         labelBase.setDisplayedMnemonic(KeyEvent.VK_U);
         labelBase.setLabelFor(textFieldBase);
 
@@ -62,6 +62,14 @@ public class SettingsBD extends JDialog {
         //Create the radio buttons.
         JRadioButton postgresButton = new JRadioButton("Postgres");
         postgresButton.setMnemonic(KeyEvent.VK_G);
+        if(setting.getTypeJDBC().equals("jdbc:postgresql")) {
+            textField.setText(setting.getServerName());
+            textFieldBase.setText(setting.getBaseName());
+            textFieldUser.setText(setting.getUserName());
+            textFieldUser.setText(setting.getUserName());
+            textFieldPass.setText(setting.getPassword());
+            postgresButton.setSelected(true);
+        }
 
         JRadioButton oracleButton = new JRadioButton("Oracle");
         oracleButton.setMnemonic(KeyEvent.VK_O);
@@ -69,7 +77,8 @@ public class SettingsBD extends JDialog {
         mssqlButton.setMnemonic(KeyEvent.VK_M);
         JRadioButton ownerButton = new JRadioButton("Owner");
         ownerButton.setMnemonic(KeyEvent.VK_W);
-        ownerButton.setSelected(true);
+        if(setting.getTypeJDBC().equals("jdbc:sqlite"))
+            ownerButton.setSelected(true);
 
         //Group the radio buttons.
         ButtonGroup group = new ButtonGroup();
@@ -84,9 +93,16 @@ public class SettingsBD extends JDialog {
                 setting.setTypeJDBC("jdbc:postgresql");
                 Setting settingPostgres = settingsDAO.findEntityByName(setting.getTypeJDBC());
                 settingUpdate = false;
+                textField.setText(null);
+                textFieldBase.setText(null);
+                textFieldUser.setText(null);
+                textFieldPass.setText(null);
                 if(settingPostgres != null) {
                     textField.setText(settingPostgres.getServerName());
                     textFieldBase.setText(settingPostgres.getBaseName());
+                    textFieldUser.setText(settingPostgres.getUserName());
+                    textFieldUser.setText(settingPostgres.getUserName());
+                    textFieldPass.setText(settingPostgres.getPassword());
                     settingUpdate = true;
                 }
             }
@@ -112,9 +128,12 @@ public class SettingsBD extends JDialog {
                 setting.setTypeJDBC("jdbc:sqlserver");
                 Setting settingMssql = settingsDAO.findEntityByName(setting.getTypeJDBC());
                 settingUpdate = false;
+                textField.setText(null);
+                textFieldBase.setText(null);
                 if(settingMssql != null) {
                     textField.setText(settingMssql.getServerName());
                     textFieldBase.setText(settingMssql.getBaseName());
+
                     settingUpdate = true;
                 }
             }
@@ -166,6 +185,8 @@ public class SettingsBD extends JDialog {
                 settingSave.setTypeJDBC(setting.getTypeJDBC());
                 settingSave.setServerName(textField.getText());
                 settingSave.setBaseName(textFieldBase.getText());
+                settingSave.setUserName(textFieldUser.getText());
+                settingSave.setPassword(textFieldPass.getText());
                 if(settingUpdate) {
                     settingsDAO.update(settingSave);
                 }
