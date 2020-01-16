@@ -124,6 +124,7 @@ public class DisplayReportTree extends JInternalFrame {
     private boolean connectionReport() {
         try {
 
+            System.out.println("" + setReportConnect(setting));
             connReport = DriverManager.getConnection(setReportConnect(setting), setting.getUserName(), setting.getPassword());
             return true;
 
