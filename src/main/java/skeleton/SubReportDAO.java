@@ -1,9 +1,6 @@
 package skeleton;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 public class SubReportDAO extends AbstractDAO<SubReport> {
@@ -12,6 +9,7 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
     public static final String SQL_FIND_PARENT = "SELECT * FROM SUBREPORT WHERE IDPARENTREP = ?";
     public static final String SQL_INSERT = "INSERT INTO SUBREPORT (IDPARENTREP, TITLES, SKIP) VALUES (?, ?, ?)";
     public static final String SQL_UPDATE = "UPDATE SUBREPORT SET SKIP = ? WHERE IDSBREP = ?";
+    public static final String SQL_DEL_REPORT = "DELETE FROM SUBREPORT WHERE IDSBREP = ?";
 
     public SubReportDAO(Connection connection) {
         super(connection);
@@ -76,7 +74,23 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
 
     @Override
     public boolean delete(int id) {
-        return false;
+
+        boolean flag = false;
+        try {
+
+            PreparedStatement statement = connection.prepareStatement(SQL_DEL_REPORT);
+            statement.setInt(1, id);
+            statement.execute();
+
+            flag = true;
+
+            statement.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            flag = false;
+        }
+        return flag;
     }
 
     @Override
@@ -90,23 +104,33 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
     }
 
     @Override
-    public boolean insert(SubReport entity) {
-
-        boolean flag = false;
+    public SubReport insert(SubReport entity) {
+        SubReport subReport = new SubReport();
         try {
 
-            PreparedStatement statement = connection.prepareStatement(SQL_INSERT);
+            subReport.setNameReport(entity.getNameReport());
+            subReport.setParentId(entity.getParentId());
+            subReport.setQuery(entity.getQuery());
+            PreparedStatement statement = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1, entity.getParentId());
             statement.setString(2, entity.getNameReport());
             statement.setString(3, entity.getQuery());
             statement.execute();
-            flag = true;
+
+            try (ResultSet rs = statement.getGeneratedKeys()) {
+                if (rs.next()) {
+                    subReport.setId(rs.getInt(1));
+                }
+            }
+
+            statement.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
+            return null;
         }
 
-        return flag;
+        return subReport;
 
     }
 
@@ -119,6 +143,8 @@ public class SubReportDAO extends AbstractDAO<SubReport> {
             statement.setString(1, entity.getQuery());
             statement.setInt(2, entity.getId());
             statement.execute();
+
+            statement.close();
 
         } catch (SQLException e) {
             e.printStackTrace();

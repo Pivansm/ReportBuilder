@@ -137,10 +137,12 @@ public class SettingsDAO extends AbstractDAO<Setting> {
     }
 
     @Override
-    public boolean insert(Setting entity) {
+    public Setting insert(Setting entity) {
 
-        boolean flag = false;
+        Setting setting = new Setting();
         try {
+
+            setting.setTypeJDBC(entity.getTypeJDBC());
 
             PreparedStatement statement = connection.prepareStatement(SQL_INSERT);
             statement.setString(1, entity.getTypeJDBC());
@@ -149,14 +151,13 @@ public class SettingsDAO extends AbstractDAO<Setting> {
             //statement.setString(3, entity.getBaseName());
             statement.execute();
             statement.close();
-            flag = true;
 
         } catch (SQLException e) {
             e.printStackTrace();
+            return null;
         }
 
-        return flag;
-
+        return setting;
     }
 
     @Override

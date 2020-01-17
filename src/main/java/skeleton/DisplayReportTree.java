@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.sql.*;
 import java.util.List;
 import java.util.Vector;
@@ -77,7 +78,22 @@ public class DisplayReportTree extends JInternalFrame {
         toolbar.add(performQuery);
         toolbar.addSeparator();
         String[] export = new String[] {"Excel(xlsx)", "Excel(xml)", "File(csv)"};
-        toolbar.add(new JComboBox<String> (export));
+        JComboBox comboBox = new JComboBox(export);
+
+        comboBox.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                JComboBox box = (JComboBox)e.getSource();
+                String item = (String)box.getSelectedItem();
+                if(item.equals("File(csv)")) {
+                    exportFileCSV("export.csv");
+                }
+
+            }
+        });
+
+        toolbar.add(comboBox);
         // Блокируем возможность перетаскивания панели
         toolbar.setFloatable(false);
 
@@ -135,8 +151,6 @@ public class DisplayReportTree extends JInternalFrame {
             e.printStackTrace();
             return false;
         }
-
-
     }
 
     public final void pop_tree() {
@@ -189,8 +203,8 @@ public class DisplayReportTree extends JInternalFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String newuzl = JOptionPane.showInputDialog(DisplayReportTree.this,"<html><h2>Новый узел");
-                newUsel(newuzl);
-                treeModel.insertNodeInto(new DefaultMutableTreeNode(newuzl), root, 0);
+                Report report = newUsel(newuzl);
+                treeModel.insertNodeInto(new DefaultMutableTreeNode(report), root, 0);
             }
         });
         pm.add(nwusel);
@@ -206,31 +220,65 @@ public class DisplayReportTree extends JInternalFrame {
                 }
                 else {
                     if(newRep != null) {
-                        newReport(newRep);
-                        treeModel.insertNodeInto(new DefaultMutableTreeNode(newRep), parent, parent.getChildCount());
+                        SubReport subReport = newReport(newRep);
+                        treeModel.insertNodeInto(new DefaultMutableTreeNode(subReport), parent, parent.getChildCount());
                     }
                 }
             }
         });
         pm.add(nwreport);
+        //Удаление узлов и отчетов
+        JMenuItem delreport = new JMenuItem("Удалить");
+        delreport.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                int result = JOptionPane.showConfirmDialog(DisplayReportTree.this, "Удалить", "Окно подтверждения", JOptionPane.YES_NO_CANCEL_OPTION);
+                DefaultMutableTreeNode parent = getSelectedNode();
+                if (result == JOptionPane.YES_OPTION) {
+                    if (parent == null) {
+                        System.out.println("Нет дерева!");
+                    } else {
+                        int level =  parent.getLevel();
+                        if(level > 1) {
+                            delReport();
+                            treeModel.removeNodeFromParent(parent);
+                        }
+                        if(level == 1) {
+                            delParent();
+                            treeModel.removeNodeFromParent(parent);
+                        }
+                    }
+                }
+            }
+        });
+        pm.add(delreport);
+
         pm.addSeparator();
         JMenuItem nwQuery = new JMenuItem("SQL запрос");
         nwQuery.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                DefaultMutableTreeNode parent = getSelectedNode();
                QueryEdit dialog = new QueryEdit(null);
                dialog.setQuery(query);
                 //dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
                 dialog.setVisible(true);
                 if(dialog.isModalOk()) {
                     System.out.println("" + dialog.getQuery());
-                    updateReport(dialog.getQuery());
+                    query = dialog.getQuery();
+                    updateReport(query);
+
+                    Object nodeInfo = parent.getUserObject();
+                    if (nodeInfo instanceof SubReport) {
+                        SubReport subReport = (SubReport) nodeInfo;
+                        subReport.setQuery(query);
+                        parent.setUserObject(subReport);
+                    }
                 }
             }
         });
         pm.add(nwQuery);
-
 
         return pm;
     }
@@ -258,10 +306,12 @@ public class DisplayReportTree extends JInternalFrame {
                     Report report = (Report) nodeInfo;
                     idParent = report.getId();
                     System.out.println("Report:"+ report.getNameReport() + " id " + report.getId());
+                    setTitle("SQL отчет (" + report.getNameReport() + ")");
                 }
                 if (nodeInfo instanceof SubReport) {
                     SubReport subReport = (SubReport) nodeInfo;
                     System.out.println("Report:"+ subReport.getNameReport() + " id " + subReport.getId() + " query:" + subReport.getQuery());
+                    setTitle("SQL отчет (" + subReport.getNameReport() + ")");
                     idCurrChildren = subReport.getId();
                     query = subReport.getQuery();
                     Object parentInfo = node.getParent();
@@ -270,28 +320,24 @@ public class DisplayReportTree extends JInternalFrame {
                         idParent = parentReport.getId();
                     }
                 }
-
-                /*if (node.isLeaf()) {
-                    System.out.println("THE ROOT NODE IS: "+node.getParent().toString()+" CHILD NODE IS: "+nodeInfo.toString());
-                } else {
-
-                }*/
             }
         };
         return objTreeListener;
     }
 
-    private void newUsel(String nameUsel) {
+    private Report newUsel(String nameUsel) {
        Report report = new Report(1, nameUsel);
-       reportDAO.insert(report);
+       return reportDAO.insert(report);
    }
 
-    private void newReport(String nameReport) {
+    private SubReport newReport(String nameReport) {
+
         SubReport subReport = new SubReport();
         subReport.setParentId(idParent);
         subReport.setNameReport(nameReport);
         subReport.setQuery("SELECT * FROM SUBREPORT");
-        subReportDAO.insert(subReport);
+
+        return subReportDAO.insert(subReport);
     }
 
     private void updateReport(String query) {
@@ -299,6 +345,16 @@ public class DisplayReportTree extends JInternalFrame {
         subReport.setId(idCurrChildren);
         subReport.setQuery(query);
         subReportDAO.update(subReport);
+    }
+
+    private void delReport() {
+        SubReport subReport = new SubReport();
+        subReport.setId(idCurrChildren);
+        subReportDAO.delete(idCurrChildren);
+    }
+
+    private void delParent() {
+        reportDAO.delete(idParent);
     }
 
     public DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
@@ -334,11 +390,17 @@ public class DisplayReportTree extends JInternalFrame {
 
                 Statement statement = connReport.createStatement();
                 ResultSet rs = statement.executeQuery(query);
-                TableModel model = buildTableModel(rs);
-                RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
-                per_table.setModel(model);
-                per_table.setRowSorter(sorter);
-                lb_status.setText("Количество строк: " + per_table.getRowCount());
+                if(rs.next()) {
+                    TableModel model = buildTableModel(rs);
+                    RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
+                    per_table.setModel(model);
+                    per_table.setRowSorter(sorter);
+                    lb_status.setText("Количество строк: " + per_table.getRowCount());
+                }
+                else
+                {
+                    lb_status.setText("Количество строк: 0");
+                }
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -357,5 +419,43 @@ public class DisplayReportTree extends JInternalFrame {
 
         return result;
     }
+
+
+    private void exportFileCSV(String pathToExportTo) {
+
+        if (per_table.getRowCount() > 0) {
+
+            try {
+
+                TableModel model = per_table.getModel();
+                FileWriter csv = new FileWriter(new File(pathToExportTo));
+
+                for (int i = 0; i < model.getColumnCount(); i++) {
+                    csv.write(model.getColumnName(i) + ";");
+                }
+
+                csv.write("\n");
+
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    for (int j = 0; j < model.getColumnCount(); j++) {
+                        csv.write(model.getValueAt(i, j).toString() + ";");
+                    }
+                    csv.write("\n");
+                }
+                csv.close();
+
+                System.out.println("Файл выгружен");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        else
+        {
+            System.out.println("Таблица пустая");
+        }
+    }
+
 
 }

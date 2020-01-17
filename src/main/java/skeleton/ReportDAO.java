@@ -8,6 +8,8 @@ import java.util.List;
 public class ReportDAO extends AbstractDAO<Report> {
     public static final String SQL_FIND_ALL = "SELECT * FROM QUREPORT";
     public static final String SQL_INSERT = "INSERT INTO QUREPORT (NAMEREP) VALUES (?)";
+    public static final String SQL_DEL_PARENT = "DELETE FROM QUREPORT WHERE IDREP = ?";
+    public static final String SQL_DEL_REPORT = "DELETE FROM SUBREPORT WHERE IDPARENTREP = ?";
 
 
     public ReportDAO(Connection connection) {
@@ -28,6 +30,7 @@ public class ReportDAO extends AbstractDAO<Report> {
                 report.setNameReport(rs.getString("NAMEREP"));
                 result.add(report);
             }
+            statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -46,7 +49,33 @@ public class ReportDAO extends AbstractDAO<Report> {
 
     @Override
     public boolean delete(int id) {
-        return false;
+        boolean flag = false;
+        try {
+
+            PreparedStatement statement = connection.prepareStatement(SQL_DEL_PARENT);
+            statement.setInt(1, id);
+            statement.execute();
+            statement.close();
+            //И всей его детей
+            try {
+                statement = connection.prepareStatement(SQL_DEL_REPORT);
+                statement.setInt(1, id);
+                statement.execute();
+                statement.close();
+            }
+            catch (SQLException ex)
+            {
+                ex.printStackTrace();
+                System.out.println("Нечего удалаять");
+            }
+
+            flag = true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            flag = false;
+        }
+        return flag;
     }
 
     @Override
@@ -60,20 +89,29 @@ public class ReportDAO extends AbstractDAO<Report> {
     }
 
     @Override
-    public boolean insert(Report entity) {
-        boolean flag = false;
-        try {
+    public Report insert(Report entity) {
 
-            PreparedStatement statement = connection.prepareStatement(SQL_INSERT);
-             statement.setString(1, entity.getNameReport());
+        Report report = new Report();
+        try {
+            report.setNameReport(entity.getNameReport());
+            PreparedStatement statement = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, entity.getNameReport());
             statement.execute();
-            flag = true;
+
+            try (ResultSet rs = statement.getGeneratedKeys()) {
+                if (rs.next()) {
+                    report.setId(rs.getInt(1));
+                }
+            }
+
+            statement.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
+            return null;
         }
 
-        return flag;
+        return report;
     }
 
 
