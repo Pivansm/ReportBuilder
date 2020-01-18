@@ -38,6 +38,7 @@ public class DisplayReportTree extends JInternalFrame {
     private int idParent;
     private int idCurrChildren;
     private String query;
+    private QueryParse queryParse;
 
     SQLiteJDBC sqLiteJDBC;
     ReportDAO reportDAO;
@@ -387,9 +388,11 @@ public class DisplayReportTree extends JInternalFrame {
         public void actionPerformed(ActionEvent e) {
             try {
                 //Connection conn = sqLiteJDBC.getConn();
-
+                queryParse = new QueryParse(query);
+                String queryNw = queryParse.getQuery();
+                System.out.println(queryNw);
                 Statement statement = connReport.createStatement();
-                ResultSet rs = statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(queryNw);
                 if(rs.next()) {
                     TableModel model = buildTableModel(rs);
                     RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
@@ -445,6 +448,7 @@ public class DisplayReportTree extends JInternalFrame {
                 csv.close();
 
                 System.out.println("Файл выгружен");
+                JOptionPane.showMessageDialog(DisplayReportTree.this, "Данные в файл: " + pathToExportTo + " выгружены");
 
             } catch (IOException e) {
                 e.printStackTrace();

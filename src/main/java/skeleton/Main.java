@@ -6,7 +6,7 @@ import java.sql.SQLException;
 public class Main {
 
     /**
-     * @Глпавный запуск программы
+     * @Главный запуск программы
      */
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
 
