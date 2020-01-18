@@ -44,8 +44,8 @@ public class QueryParse {
                             //.map(Person::getFirstName)
                             .collect(Collectors.joining(", ")); // ", "
                     System.out.println(strMacros);
-                    query.replaceAll(MULTI_PARAMT_FL, strMacros);
-
+                    query = query.replaceAll(MULTI_PARAMT_FL, strMacros);
+                    System.out.println(query);
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();

@@ -41,12 +41,12 @@ public class SettingsBD extends JDialog {
         labelBase.setLabelFor(textFieldBase);
 
         JLabel labelUser = new JLabel("Username");
-        JTextField textFieldUser = new JTextField();
+        final JTextField textFieldUser = new JTextField();
         labelUser.setDisplayedMnemonic(KeyEvent.VK_N);
         labelUser.setLabelFor(textFieldUser);
 
         JLabel labelPass = new JLabel("Password");
-        JTextField textFieldPass = new JTextField();
+        final JTextField textFieldPass = new JTextField();
         labelPass.setDisplayedMnemonic(KeyEvent.VK_P);
         labelPass.setLabelFor(textFieldPass);
 
